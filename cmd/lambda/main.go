@@ -95,10 +95,13 @@ func main() {
 }
 
 func Serve(event Event) (Response, error) {
-	path := event.PathParameters["proxy"]
-	path = filepath.Join(os.Getenv("BASE_DIR"), path)
+	rawPath := event.PathParameters["proxy"]
+	path := filepath.Join(os.Getenv("BASE_DIR"), rawPath)
+
+	// try to handle as an directory
 	items, err := drv.ListChildren(path)
 	if err != nil {
+		// whether not found or other error
 		switch err.(type) {
 		case *drive.ReqError:
 			if err.(*drive.ReqError).Err.Code == "itemNotFound" {
@@ -116,6 +119,7 @@ func Serve(event Event) (Response, error) {
 		}, err
 	}
 
+	// if not a directory
 	if len(items) == 0 {
 		item, err := drv.Item(path)
 		if err != nil {
@@ -134,7 +138,8 @@ func Serve(event Event) (Response, error) {
 		}, nil
 	}
 
-	parent := path
+	// if is a directory
+	parent := rawPath
 	if !strings.HasPrefix(parent, "/") {
 		parent = "/" + parent
 	}
