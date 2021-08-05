@@ -96,6 +96,7 @@ func main() {
 
 func Serve(event Event) (Response, error) {
 	path := event.PathParameters["proxy"]
+	path = filepath.Join(os.Getenv("BASE_DIR"), path)
 	items, err := drv.ListChildren(path)
 	if err != nil {
 		switch err.(type) {
